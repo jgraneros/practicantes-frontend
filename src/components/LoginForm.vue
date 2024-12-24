@@ -1,6 +1,8 @@
 <script setup>
 
     import { ref } from 'vue'
+    import { login } from '../services/authService';
+import router from '../router';
 
     const usuario = ref('');
     const password = ref('');
@@ -20,27 +22,14 @@
 
         try {
 
-          console.log("enviando request...")
+          const response = await login(usuario, password);
+          console.log("Respuesta de la API", response);
 
-          const formData = new URLSearchParams();
-          formData.append('username', usuario.value);
-          formData.append('password', password.value);
-
-          const response = await fetch('http://localhost:8081/usuarios/v1/auth', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: formData.toString(),
-        });
-
-        if (!response.ok) {
-            throw new Error('Error en la autenticación');
-        }
-
-        const data = await response.json();
-        console.log('Respuesta de la API:', data);
-
+          if (response && response.access_token) {
+            console.log("redireccion...")
+            localStorage.setItem('token', response.access_token);
+            router.push('/dashboard');
+          }
           
         } catch (error) {
 
